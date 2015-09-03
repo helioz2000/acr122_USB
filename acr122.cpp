@@ -29,10 +29,16 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <iostream>
+
 #include "acr122_usb.h"
 
-int logLevel = 1;   // 1 = error, 2 = info, 3 = debug
+using namespace std;
+
+#define LOG_LEVEL_MAX 3
+int logLevel = 0;   // 1 = error, 2 = info, 3 = debug
 static int receivedSignal = 0;
+static string execName;
 
 void sigHandler(int signum)
 {
@@ -55,6 +61,49 @@ void sigHandler(int signum)
     //cerr << endl << "Received " << signame << endl;
 }
 
+static void showUsage(void) {
+    cout << "usage:" << endl;
+    cout << execName << " -d[1-3] -h" << endl;
+    //cout << "c = name of config file (.cfg is added automatically)" << endl;
+    cout << "dx = debug level (x=1 to 3)" << endl;
+    cout << "h = show help" << endl;
+}
+
+static bool parseArguments (int argc, const char *argv[])
+{
+    char buffer[64];
+    int i, buflen;
+    int retval = true;
+    
+    execName = std::string(basename(argv[0]));
+    
+    if (argc > 1) {
+        for (i = 1; i < argc; i++) {
+            strcpy(buffer, argv[i]);
+            buflen = strlen(buffer);
+            if ((buffer[0] == '-') && (buflen >=2)) {
+                switch (buffer[1]) {
+                    case 'd':
+                        logLevel = buffer[2] - 0x30;
+                        // enforce log level limits
+                        logLevel = std::min(logLevel, LOG_LEVEL_MAX);
+                        logLevel = std::max(logLevel, 0);
+                        break;
+                    case 'h':
+                        showUsage();
+                        retval = false;
+                        break;
+                    default:
+                        std::cerr << "uknown parameter <" << &buffer[1] << ">" << endl;
+                        showUsage();
+                        retval = false;
+                        break;
+                }
+            }
+        }
+    }
+    return retval;
+}
 
 int main(int argc, const char *argv[])
 {
@@ -62,10 +111,15 @@ int main(int argc, const char *argv[])
     ACR122_USB reader;
     uint16_t vendor_id, product_id;
     
+    if (! parseArguments(argc,argv) )
+        return EXIT_FAILURE;
+    
+    cout << "Loglevel = " << logLevel << endl;
+    
     signal (SIGINT, sigHandler);
     signal (SIGHUP, sigHandler);
     signal (SIGTERM, sigHandler);
-
+    
     if (! reader.usb_scan(&vendor_id, &product_id)) {
         goto exit_fail;
     }
@@ -79,6 +133,7 @@ int main(int argc, const char *argv[])
     reader.init(true);
     
     while (!receivedSignal) {
+        // need to call process regularly so libusb can respond
         if (reader.process()) {
             printf("Target ID: %s\n", reader.getUID() );
         };
