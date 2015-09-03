@@ -1,4 +1,4 @@
-/*-
+/*
  * ACR122U Near Field Communication (NFC)
  *
  * Copyright (C) 2015      Erwin Bejsta
