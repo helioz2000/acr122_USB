@@ -14,7 +14,7 @@ Raspberry Pi B+ V2 running Raspbian Wheezy, a Debian flavour of Linux
 - - -
 NOTE:
 Raspbian Wheezy comes with a NFC driver loadable kernel module (LKM). The LKM will claim the USB interface and will deny acr122 access to the USB port. You will recognise this problem as the LED on the reader will light up within a few seconds of the reader being connected to the USB port. 
-You can confirm the KLM’s with `sudo lsmod` which will list show `pn533` and `nfc` modules. The modules can be temporarily unloaded with `sudo rmmod pn533` and `sudo rmmod nfc` but reconnecting the ACR122U will re-load the modules.
+Active KLM’s can be confirmed with `sudo lsmod` which will list show `pn533` and `nfc` modules. The modules can be temporarily unloaded with `sudo rmmod pn533` and `sudo rmmod nfc` but reconnecting the ACR122U will re-load the modules.
 
 For a more permanent solution place a file named `blacklist-libnfc.conf` into `/etc/modprobe.d/` with the following contents:
     blacklist nfc
