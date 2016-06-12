@@ -17,6 +17,7 @@ Raspbian Wheezy comes with a NFC driver loadable kernel module (LKM). The LKM wi
 Active LKMs can be confirmed with `sudo lsmod` which will list show `pn533` and `nfc` modules. The modules can be temporarily unloaded with `sudo rmmod pn533` and `sudo rmmod nfc` but reconnecting the ACR122U will re-load the modules.
 
 For a more permanent solution place a file named `blacklist-libnfc.conf` into `/etc/modprobe.d/` with the following contents:
+
     blacklist nfc
     blacklist pn533
 - - -
